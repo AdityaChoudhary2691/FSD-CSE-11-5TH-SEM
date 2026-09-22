@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Demo Fetch</title>
+        <style>
+            table{
+                border: 2px solid black;
+                width: 80vw;
+                margin: auto;
+            }
+            th,td{
+                border: 2px solid black;
+                text-align: center;
+            }
+            button{
+                background-color: rgb(28, 198, 220);
+                width: 250px;
+                height: 40px;
+                color: white;
+                border: 2px solid black;
+            }
+        </style>
+        <script>
+            let rate="";
+            const URL="https://dummyjson.com/products?limit=10&skip=2";
+            async function loadProducts(){
+                try{
+                    const res=await fetch(URL);
+                    let rows="";
+                    console.log("res= ",res);
+                    const data=await res.json();
+                    console.log("Data= ",data.products);
+                    data.products.map((i,index)=>(
+                        rows+=`
+                        <tr>
+                            <td>${index+1}</td>
+                            <td>${i.title}</td>
+                            <td><img src=${i.images[0]} width="50" height="50"/></td>
+                            <td>${i.category}</td>
+                            <td>${i.rating}</td>
+                            <td>${(i.price*rate).toFixed(2)}&#8377</td>
+                            <td>${i.stock}</td>
+                            <td><input type="checkbox" onchange="updateCart(this)" id="cart-${index}"><label for="cart-${index}">Add</label></td>    
+                        </tr>`
+                    ))
+                    const el=document.getElementById("data");
+                    el.innerHTML=rows;
+                }
+                catch(err){
+                    console.log("Error:",err);
+                }
+            }
+            loadProducts();
+            async function getRate(){
+                try{
+                    const URL="https://open.er-api.com/v6/latest/USD";
+                    const res=await fetch(URL);
+                    const data=await res.json();
+                    console.log("Rate= ",data.rates.INR);
+                    return Number(data.rates.INR);
+                }
+                catch(err){
+                    console.log("Error: ",err);
+                }
+            }
+            const test = async ()=>{
+                rate=await getRate();
+            }
+            test();
+            let item=0;
+            function updateCart(checkbox){
+                if(checkbox.checked){
+                    item++;
+                    alert("item added");
+                }else if(!checkbox.checked){
+                  item--;
+                  alert("item removed");
+                }
+                document.getElementById("countitem").innerText = item;
+                
+            }
+        </script>
+    </head>
+    <body>
+        <h1><center>List of Products</center></h1>
+        <table>
+            <thead>
+                <th>SR.No</th>
+                <th>Title</th>
+                <th>Image</th>
+                <th>Category</th>
+                <th>Rating</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Add to Cart</th>
+            </thead>
+            <tbody id="data"></tbody>
+        </table>
+        <br><br>
+        <h3><center> No. of Items in Cart: <span id="countitem">0</span></center></h3>
+        <br><br>
+        <center><button> Place Order </button></center>
+    </body>
+</html>
